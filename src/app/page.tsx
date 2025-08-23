@@ -90,3 +90,15 @@ export default function Home() {
     </div>
   );
 }
+
+
+export default function Offline() {
+  return (
+    <main className="min-h-screen grid place-items-center p-6">
+      <div className="max-w-md text-center">
+        <h1 className="text-2xl font-bold mb-2">You’re offline</h1>
+        <p className="opacity-80">We’ll sync your progress when you’re back.</p>
+      </div>
+    </main>
+  );
+}
