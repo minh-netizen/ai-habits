@@ -1,30 +1,43 @@
 'use client';
 import { useEffect, useState } from 'react';
 
+// Type for Chrome’s beforeinstallprompt event
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[];
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
+// Extend Navigator for iOS Safari
+declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
+}
+
 export default function InstallPrompt() {
-  const [deferred, setDeferred] = useState<any>(null);
+  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    // Hide if already installed
     const alreadyInstalled =
       window.matchMedia('(display-mode: standalone)').matches ||
-      // iOS Safari
-      // @ts-ignore
       window.navigator.standalone === true;
+
     if (alreadyInstalled) setVisible(false);
 
-    const onBIP = (e: any) => {
-      e.preventDefault();          // keep the event for our button
-      setDeferred(e);
+    const onBIP = (e: Event) => {
+      const bip = e as BeforeInstallPromptEvent;
+      bip.preventDefault();
+      setDeferred(bip);
       setVisible(true);
     };
     const onInstalled = () => setVisible(false);
 
-    window.addEventListener('beforeinstallprompt', onBIP);
+    window.addEventListener('beforeinstallprompt', onBIP as EventListener);
     window.addEventListener('appinstalled', onInstalled);
     return () => {
-      window.removeEventListener('beforeinstallprompt', onBIP);
+      window.removeEventListener('beforeinstallprompt', onBIP as EventListener);
       window.removeEventListener('appinstalled', onInstalled);
     };
   }, []);
@@ -33,12 +46,11 @@ export default function InstallPrompt() {
 
   const handleClick = async () => {
     if (deferred) {
-      const choice = await deferred.prompt();
-      await choice.userChoice;     // 'accepted' | 'dismissed'
+      await deferred.prompt();
+      await deferred.userChoice;
       setDeferred(null);
       return;
     }
-    // Fallback instructions when BIP didn't fire
     const ua = navigator.userAgent.toLowerCase();
     if (/iphone|ipad|ipod/.test(ua)) {
       alert('On iPhone/iPad: Share (↑) → Add to Home Screen');
@@ -48,10 +60,7 @@ export default function InstallPrompt() {
   };
 
   return (
-    <button
-      className="rounded-2xl px-4 py-2 shadow"
-      onClick={handleClick}
-    >
+    <button className="rounded-2xl px-4 py-2 shadow" onClick={handleClick}>
       Install App
     </button>
   );
