@@ -35,11 +35,7 @@ export default function Home() {
 
 const markDone = async () => {
   const res = await completeToday();
-  if (!res.ok) {
-    alert(res.error);
-    return;
-  }
-  // Here res is { ok: true; current: number; longest: number }
+  if (!res.ok) { alert(res.error); return; }
   setStreak({ current: res.current, longest: res.longest });
 };
 
