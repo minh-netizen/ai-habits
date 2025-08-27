@@ -33,11 +33,15 @@ export default function Home() {
     return () => sub.data.subscription.unsubscribe();
   }, []);
 
-  const markDone = async () => {
-    const res = await completeToday();
-    if (!res.ok) return alert(res.error);
-    setStreak({ current: res.current, longest: res.longest });
-  };
+const markDone = async () => {
+  const res = await completeToday();
+  if (!res.ok) {
+    alert(res.error);
+    return;
+  }
+  // Here res is { ok: true; current: number; longest: number }
+  setStreak({ current: res.current, longest: res.longest });
+};
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
