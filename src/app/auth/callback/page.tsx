@@ -11,7 +11,8 @@ export default function AuthCallback() {
   useEffect(() => {
     const code = params.get('code');
     if (!code) { setMsg('Missing code'); return; }
-    supabase.auth.exchangeCodeForSession({ code })
+
+    supabase.auth.exchangeCodeForSession(code)
       .then(({ error }) => {
         if (error) setMsg(`Error: ${error.message}`);
         else router.replace('/');
